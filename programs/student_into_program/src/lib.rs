@@ -6,7 +6,7 @@ const DISCRIMINATOR: usize = 8;
 const MAX_NAME_LENGTH: usize = 20;
 const MAX_MESSAGE_LENGTH: usize = 50;
 
-// #[program]
+#[program]
 pub mod student_into_program {
     use super::*;
 
@@ -37,6 +37,11 @@ pub mod student_into_program {
 
         Ok(())
     }
+
+    pub fn delete_student_intro(ctx: Context<DeleteStudentIntro>, name: String) -> Result<()> {
+        msg!("Student Intro for {} student, deleted", name);
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -59,6 +64,20 @@ pub struct UpdateStudentIntro<'info> {
         realloc=DISCRIMINATOR + StudentIntoState::INIT_SPACE,
         realloc::payer = initializer,
         realloc::zero = true,
+    )]
+    pub student_intro: Account<'info, StudentIntoState>,
+    #[account(mut)]
+    pub initializer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(name:String)]
+pub struct DeleteStudentIntro<'info> {
+    #[account(mut, seeds=[name.as_bytes(),
+        initializer.key().as_ref()],
+        bump,
+        close=initializer
     )]
     pub student_intro: Account<'info, StudentIntoState>,
     #[account(mut)]
